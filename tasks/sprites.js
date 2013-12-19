@@ -20,7 +20,8 @@ module.exports = function(grunt) {
             margin = !_.isUndefined(this.data.margin) ? parseInt(this.data.margin, 10) : 0,
             externalData = '',
             classPrefix = _.isUndefined(this.data.classPrefix) ? '' : this.data.classPrefix,
-            output = !_.isUndefined(this.data.output) ? this.data.output.toLowerCase() : "css";
+            output = !_.isUndefined(this.data.output) ? this.data.output.toLowerCase() : "css",
+            includeDimensions = !_.isUndefined(this.data.includeDimensions) ? this.data.includeDimensions : false;
 
         // check if the margin setting is a number
         if (_.isNaN(margin)) {
@@ -66,8 +67,12 @@ module.exports = function(grunt) {
             });
 
             fileContents += imageClasses + ' {' + '\n' + '    background: url("' + generateBackgroundImagePath() + '") no-repeat;\n' + '}\n\n';
-            imageData.heights.forEach(function (height, idx) {
-                fileContents += '.' + (classPrefix === '' ? '' : classPrefix + '-') + path.basename(images[idx].file, '.png') + ' {\n' + '    background-position: 0 ' +  -height + ( height === 0 ? "" : 'px') + ';\n' + '}\n\n';
+            imageData.images.forEach(function (image, idx) {
+                fileContents += '.' + (classPrefix === '' ? '' : classPrefix + '-') + path.basename(images[idx].file, '.png') + ' {\n' + '    background-position: 0 ' +  -image.offset + ( image.offset === 0 ? "" : 'px') + ';\n';
+                if (includeDimensions) {
+                    fileContents += '    background-size: ' + image.width + 'px ' + image.height + 'px;\n';
+                }
+                fileContents += "}\n\n";
             });
 
             return fileContents;
@@ -77,8 +82,13 @@ module.exports = function(grunt) {
             var fileContents = '';
 
             fileContents += "%" + placeholder + (scssSyntax ? ' {' : '') + '\n' + '    background: url("' + generateBackgroundImagePath() + '") no-repeat' + (scssSyntax ? ';\n }' : '') + '\n\n';
-            imageData.heights.forEach(function (height, idx) {
-                fileContents += '%' + (classPrefix === '' ? '' : classPrefix + '-') + path.basename(images[idx].file, '.png') + (scssSyntax ? ' {' : '') + '\n    @extend ' + '%' + placeholder + (scssSyntax ? ' ;' : '') + '\n' + '    background-position: 0 ' +  -height + ( height === 0 ? "" : 'px') + (scssSyntax ? ';\n }' : '') + '\n\n';
+            imageData.images.forEach(function (image, idx) {
+                fileContents += '%' + (classPrefix === '' ? '' : classPrefix + '-') + path.basename(images[idx].file, '.png') + (scssSyntax ? ' {' : '') + '\n    @extend ' + '%' + placeholder + (scssSyntax ? ' ;' : '') + '\n' + '    background-position: 0 ' +  -image.offset + ( image.offset === 0 ? "" : 'px') + (scssSyntax ? ';' : '') + '\n';
+                if (includeDimensions) {
+                    fileContents += '    background-size: ' + image.width + 'px ' + image.height + 'px' + (scssSyntax ? ';' : '') + '\n';
+
+                }
+                fileContents +=  (scssSyntax ? '}' : '') + '\n\n';
             });
 
             return fileContents;
@@ -89,8 +99,12 @@ module.exports = function(grunt) {
             var fileContents = '';
 
             fileContents += "." + placeholder + ' {\n' + '    background: url("' + generateBackgroundImagePath() + '") no-repeat;\n }'  + '\n\n';
-            imageData.heights.forEach(function (height, idx) {
-                fileContents += '.' + (classPrefix === '' ? '' : classPrefix + '-') + path.basename(images[idx].file, '.png') + ':extend(.' + placeholder + ') {\n' + '    background-position: 0 ' +  -height + ( height === 0 ? "" : 'px') + ';\n' + '}\n\n';
+            imageData.images.forEach(function (image, idx) {
+                fileContents += '.' + (classPrefix === '' ? '' : classPrefix + '-') + path.basename(images[idx].file, '.png') + ':extend(.' + placeholder + ') {\n' + '    background-position: 0 ' +  -image.offset + ( image.offset === 0 ? "" : 'px') + ';\n';
+                if (includeDimensions) {
+                    fileContents += '    background-size: ' + image.width + 'px ' + image.height + 'px;\n';
+                }
+                fileContents += '}\n\n';
             });
 
             return fileContents;
